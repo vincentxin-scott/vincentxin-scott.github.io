@@ -1,0 +1,60 @@
+@startuml
+
+' class BuFinancialAccount{
+
+' }
+' class BuFinancialAccountDetails{
+
+' }
+' class BuFinancialTradeAccount{
+
+' }
+' class BuFinancialTradeAccountDetails{
+
+' }
+
+
+
+
+actor parent_trader
+actor sub_trader
+group 贸易商注册
+parent_trader-> 注册中心:贸易商作为客户注册贸易商云平台
+注册中心 -->注册中心:创建用户
+注册中心-> 账款中心:创建财务账户
+注册中心<-- 账款中心:账户创建完成
+sub_trader-> 注册中心:贸易商作为客户注册贸易商云平台
+注册中心 -->注册中心:创建用户
+注册中心-> 账款中心:创建财务账户
+注册中心<-- 账款中心:账户创建完成
+end
+group 贸易商签订合同
+parent_trader -> 合同中心:1签订合同
+sub_trader  -> 合同中心:1签订合同
+合同中心 -> 账款中心:2建立合作贸易账户
+end
+group 下游贸易商充值
+    sub_trader -> 账款中心:（完整逻辑目前不实现）下游贸易商充值
+    parent_trader -> 账款中心:下游贸易商线下打款到上游，上游对该下游合作贸易账户（现金、承兑）进行充值操作。
+end
+group 下游贸易商退款
+    sub_trader -> 账款中心:（完整逻辑目前不实现）下游贸易商退款。
+    parent_trader -> 账款中心:下游贸易商线下协商，上游对该下游合作贸易账户（现金、承兑）进行退款操作。
+end
+group 上游贸易商授信
+    ' sub_trader -> 账款中心:（完整逻辑目前不实现）下游贸易商退款。
+    parent_trader -> 账款中心:为下游贸易商完成授信，对合作贸易账户的（授信账户进行充值）。
+end
+group 前置结算流程(需要用户主动触发，之后进入账户明细流程)
+end
+group 交易流程(暂时流程废止了)
+parent_trader -> 提煤单中心:上游贸易商转发提煤单
+提煤单中心 -> sub_trader: 下游贸易商接收提煤单
+sub_trader ->   煤矿单位:携带提煤单拉煤（完成扣款）
+
+end
+
+group 上游贸易商结束授信
+    parent_trader -> 账款中心:为下游贸易商结束授信，对合作贸易账户的（授信账户进行扣除清零）。
+end
+@enduml

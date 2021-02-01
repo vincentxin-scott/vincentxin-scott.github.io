@@ -1,0 +1,9 @@
+@startuml 用户中心
+actor user
+
+user-> 注册:
+
+
+
+
+@enduml

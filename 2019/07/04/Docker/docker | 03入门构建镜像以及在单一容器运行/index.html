@@ -1,0 +1,231 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,minimal-ui"><meta name="renderer" content="webkit"><meta http-equiv="Cache-Control" content="no-transform"><meta http-equiv="Cache-Control" content="no-siteapp"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="format-detection" content="telephone=no,email=no,adress=no"><meta name="theme-color" content="#000000"><meta http-equiv="window-target" content="_top"><title>Docker(三)构建镜像以及在单一容器运行 | On The Way</title><meta name="description" content="容器基本操作启动容器：1docker run IMAGE [COMMAND] [ARGS...] run 命令解释：   1.命令会检测当前要运行的镜像在本地存不存在,若不存在他会自动 pull 下来再运行 2.运行后会启动一个容器, 并且开启一个文件系统, 你可以直接在容器内创建文件夹. 运行一个指定的程序, 当程序退出后, 容器也就退出了 3.运行时的容器无法删除, 只能停止后删除, 或者加上"><meta property="og:type" content="article"><meta property="og:title" content="Docker(三)构建镜像以及在单一容器运行"><meta property="og:url" content="https://vincentxin-scott.github.io/2019/07/04/Docker/docker%20|%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/index.html"><meta property="og:site_name" content="On The Way"><meta property="og:description" content="容器基本操作启动容器：1docker run IMAGE [COMMAND] [ARGS...] run 命令解释：   1.命令会检测当前要运行的镜像在本地存不存在,若不存在他会自动 pull 下来再运行 2.运行后会启动一个容器, 并且开启一个文件系统, 你可以直接在容器内创建文件夹. 运行一个指定的程序, 当程序退出后, 容器也就退出了 3.运行时的容器无法删除, 只能停止后删除, 或者加上"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://raw.githubusercontent.com/vincentxin-scott/img/master/picgo/20190704222607.png"><meta property="og:image" content="https://raw.githubusercontent.com/vincentxin-scott/img/master/picgo/20190704230914.png"><meta property="article:published_time" content="2019-07-04T07:00:35.680Z"><meta property="article:modified_time" content="2020-03-06T02:57:04.120Z"><meta property="article:author" content="Vincent Xin"><meta property="article:tag" content="Docker"><meta name="twitter:card" content="summary"><meta name="twitter:image" content="https://raw.githubusercontent.com/vincentxin-scott/img/master/picgo/20190704222607.png"><link rel="canonical" href="https://vincentxin-scott.github.io/2019/07/04/Docker/docker%20|%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/index.html"><link rel="alternate" href="/atom.xml" title="On The Way" type="application/atom+xml"><link rel="icon" href="/images/favicon.png" type="image/x-icon"><link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css"><meta name="generator" content="Hexo 5.3.0"></head><body class="main-center theme-black" itemscope itemtype="http://schema.org/WebPage"><header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="slimContent"><div class="navbar-header"><div class="profile-block text-center"><a id="avatar" href="https://github.com/vincentxin-scott" target="_blank"><img class="img-circle img-rotate" src="/images/avatar.jpg" width="200" height="200"></a><h2 id="name" class="hidden-xs hidden-sm">Vincent Xin</h2><h3 id="title" class="hidden-xs hidden-sm hidden-md">从零开始的程序猿之路</h3><small id="location" class="text-muted hidden-xs hidden-sm"><i class="icon icon-map-marker"></i> Huhhot, China</small></div><div class="search" id="search-form-wrap"><form class="search-form sidebar-form"><div class="input-group"><input type="text" class="search-form-input form-control" placeholder="搜索"> <span class="input-group-btn"><button type="submit" class="search-form-submit btn btn-flat" onclick="return!1"><i class="icon icon-search"></i></button></span></div></form><div class="ins-search"><div class="ins-search-mask"></div><div class="ins-search-container"><div class="ins-input-wrapper"><input type="text" class="ins-search-input" placeholder="想要查找什么..." x-webkit-speech> <button type="button" class="close ins-close ins-selectable" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button></div><div class="ins-section-wrapper"><div class="ins-section-container"></div></div></div></div></div><button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#main-navbar" aria-controls="main-navbar" aria-expanded="false"><span class="sr-only">Toggle navigation</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span></button></div><nav id="main-navbar" class="collapse navbar-collapse" itemscope itemtype="http://schema.org/SiteNavigationElement" role="navigation"><ul class="nav navbar-nav main-nav"><li class="menu-item menu-item-home"><a href="/."><i class="icon icon-home-fill"></i> <span class="menu-title">首页</span></a></li><li class="menu-item menu-item-archives"><a href="/archives"><i class="icon icon-archives-fill"></i> <span class="menu-title">归档</span></a></li><li class="menu-item menu-item-categories"><a href="/categories"><i class="icon icon-folder"></i> <span class="menu-title">分类</span></a></li><li class="menu-item menu-item-tags"><a href="/tags"><i class="icon icon-tags"></i> <span class="menu-title">标签</span></a></li></ul><ul class="social-links"><li><a href="https://github.com/vincentxin-scott" target="_blank" title="Github" data-toggle="tooltip" data-placement="top"><i class="icon icon-github"></i></a></li><li><a href="/atom.xml" target="_blank" title="Rss" data-toggle="tooltip" data-placement="top"><i class="icon icon-rss"></i></a></li></ul></nav></div></header><aside class="sidebar" itemscope itemtype="http://schema.org/WPSideBar"><div class="slimContent"><div class="widget"><h3 class="widget-title">公告</h3><div class="widget-body"><div id="board"><div class="content"><p>只有你很努力的时候，才能很安心!</p></div></div></div></div><div class="widget"><h3 class="widget-title">分类</h3><div class="widget-body"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/DevOps/">DevOps</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java%E5%9F%BA%E7%A1%80/">Java基础</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring/">Spring</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Spring%E5%AE%98%E6%96%B9%E6%96%87%E6%A1%A3/">Spring官方文档</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B0%8F%E7%A8%8B%E5%BA%8F/">小程序</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%B7%A5%E4%BD%9C%E6%B5%81/">工作流</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a><span class="category-list-count">32</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94/">杂记随笔</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E6%A1%86%E6%9E%B6/">框架</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%AC%AC%E4%B8%89%E6%96%B9%E6%94%AF%E4%BB%98/">第三方支付</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%BD%91%E7%BB%9C/">网络</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80/">脚本语言</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">设计模式</a><span class="category-list-count">3</span></li></ul></div></div><div class="widget"><h3 class="widget-title">标签</h3><div class="widget-body"><ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Activiti/" rel="tag">Activiti</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/" rel="tag">Docker</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Homebrew/" rel="tag">Homebrew</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/HttpClient/" rel="tag">HttpClient</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Idea/" rel="tag">Idea</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JDK/" rel="tag">JDK</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Jenkins/" rel="tag">Jenkins</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Lua/" rel="tag">Lua</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Markdown/" rel="tag">Markdown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a><span class="tag-list-count">20</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MySQL-MariaDB-%E6%8A%A5%E9%94%99%E5%A4%84%E7%90%86/" rel="tag">MySQL(MariaDB)报错处理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/OKHTTP/" rel="tag">OKHTTP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ORACLE/" rel="tag">ORACLE</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Oh-my-zsh/" rel="tag">Oh-my-zsh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Redis/" rel="tag">Redis</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring/" rel="tag">Spring</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringBoot/" rel="tag">SpringBoot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringCloud/" rel="tag">SpringCloud</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SpringSecurity/" rel="tag">SpringSecurity</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Spring%E6%96%87%E6%A1%A3/" rel="tag">Spring文档</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/certbot/" rel="tag">certbot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/lftp/" rel="tag">lftp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/" rel="tag">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/npm/" rel="tag">npm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nvm/" rel="tag">nvm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/shell/" rel="tag">shell</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E4%BA%8B%E5%8A%A1/" rel="tag">事务</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="tag">分布式数据库</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BE%AE%E4%BF%A1%E5%85%AC%E4%BC%97%E5%8F%B7%EF%BC%8C%E5%BE%AE%E4%BF%A1%E5%B0%8F%E7%A8%8B%E5%BA%8F/" rel="tag">微信公众号，微信小程序</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E5%BE%AE%E4%BF%A1%E6%94%AF%E4%BB%98/" rel="tag">微信支付</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E4%BB%98/" rel="tag">支付宝支付</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E7%BA%BF%E7%A8%8B/" rel="tag">线程</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%A7%A3%E5%86%B3%E9%97%AE%E9%A2%98/" rel="tag">解决问题</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="tag">设计模式</a><span class="tag-list-count">3</span></li></ul></div></div><div class="widget"><h3 class="widget-title">归档</h3><div class="widget-body"><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/01/">一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">四月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/03/">三月 2020</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/02/">二月 2020</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/11/">十一月 2019</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/10/">十月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">九月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">三月 2019</a><span class="archive-list-count">4</span></li></ul></div></div><div class="widget"><h3 class="widget-title">最新文章</h3><div class="widget-body"><ul class="recent-post-list list-unstyled no-thumbnail"><li><div class="item-inner"><p class="item-category"><a class="category-link" href="/categories/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94/">杂记随笔</a></p><p class="item-title"><a href="/2021/01/28/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94/%E6%B0%B8%E4%B9%85%E8%87%AA%E5%8A%A8%E8%8E%B7%E5%BE%97%E5%85%8D%E8%B4%B9%E7%9A%84HTTPS%E8%AF%81%E4%B9%A6--certbot/" class="title">永久自动获得免费得HTTPS证书</a></p><p class="item-date"><time datetime="2021-01-28T08:02:16.624Z" itemprop="datePublished">2021-01-28</time></p></div></li><li><div class="item-inner"><p class="item-category"><a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></p><p class="item-title"><a href="/2020/09/07/%E6%95%B0%E6%8D%AE%E5%BA%93/%E9%98%BF%E9%87%8C%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93PolarDB-X/" class="title">分布式数据库PloarDB-X</a></p><p class="item-date"><time datetime="2020-09-07T02:51:54.594Z" itemprop="datePublished">2020-09-07</time></p></div></li><li><div class="item-inner"><p class="item-category"><a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></p><p class="item-title"><a href="/2020/08/27/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL/mysql%EF%BD%9C20MySQL%E6%98%AF%E6%80%8E%E4%B9%88%E4%BF%9D%E8%AF%81%E4%B8%BB%E5%A4%87%E4%B8%80%E8%87%B4%E7%9A%84/" class="title">MySQL实践篇-MySQL是怎么保证主备一致的？</a></p><p class="item-date"><time datetime="2020-08-27T03:58:50.328Z" itemprop="datePublished">2020-08-27</time></p></div></li><li><div class="item-inner"><p class="item-category"><a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></p><p class="item-title"><a href="/2020/08/03/%E6%95%B0%E6%8D%AE%E5%BA%93/%E5%88%86%E5%B8%83%E5%BC%8F%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%89%E5%9E%8B%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94/" class="title">分布式数据库技术选型</a></p><p class="item-date"><time datetime="2020-08-03T04:19:53.397Z" itemprop="datePublished">2020-08-03</time></p></div></li><li><div class="item-inner"><p class="item-category"><a class="category-link" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a></p><p class="item-title"><a href="/2020/05/29/Java/Spring%E4%BA%8B%E5%8A%A1%E5%A4%B1%E6%95%88%E5%8E%9F%E5%9B%A0%E6%8E%A2%E7%A9%B6/" class="title">Transactional事务失效自检流程</a></p><p class="item-date"><time datetime="2020-05-29T06:12:24.360Z" itemprop="datePublished">2020-05-29</time></p></div></li></ul></div></div></div></aside><aside class="sidebar sidebar-toc collapse" id="collapseToc" itemscope itemtype="http://schema.org/WPSideBar"><div class="slimContent"><nav id="toc" class="article-toc"><h3 class="toc-title">文章目录</h3><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">1.</span> <span class="toc-text">容器基本操作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%B9%E5%99%A8%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">启动容器：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%88%E6%8A%A4%E5%BC%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">1.2.</span> <span class="toc-text">启动守护式容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%AE%B9%E5%99%A8"><span class="toc-number">1.3.</span> <span class="toc-text">查看容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%AE%B9%E5%99%A8%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF"><span class="toc-number">1.4.</span> <span class="toc-text">查看容器详细信息:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8D%E6%96%B0%E5%90%AF%E5%8A%A8%E5%81%9C%E6%AD%A2%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc-number">1.5.</span> <span class="toc-text">重新启动停止的容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%81%9C%E6%AD%A2%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc-number">1.6.</span> <span class="toc-text">删除停止的容器:</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%AE%88%E6%8A%A4%E5%BC%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">2.</span> <span class="toc-text">守护式容器</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%A5%E5%AE%88%E6%8A%A4%E5%BD%A2%E5%BC%8F%E8%BF%90%E8%A1%8C%E5%AE%B9%E5%99%A8"><span class="toc-number">2.1.</span> <span class="toc-text">以守护形式运行容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%8A%A0%E5%88%B0%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc-number">2.2.</span> <span class="toc-text">附加到运行中的容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%AE%88%E6%8A%A4%E5%BC%8F%E5%AE%B9%E5%99%A8-1"><span class="toc-number">2.3.</span> <span class="toc-text">启动守护式容器:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%AE%B9%E5%99%A8%E6%97%A5%E5%BF%97"><span class="toc-number">2.4.</span> <span class="toc-text">查看容器日志:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%AE%B9%E5%99%A8%E5%86%85%E8%BF%9B%E7%A8%8B"><span class="toc-number">2.5.</span> <span class="toc-text">查看容器内进程:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%AE%B9%E5%99%A8%E5%86%85%E5%90%AF%E5%8A%A8%E6%96%B0%E8%BF%9B%E7%A8%8B"><span class="toc-number">2.6.</span> <span class="toc-text">在运行中的容器内启动新进程:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%9C%E6%AD%A2%E5%AE%88%E6%8A%A4%E5%BC%8F%E5%AE%B9%E5%99%A8"><span class="toc-number">2.7.</span> <span class="toc-text">停止守护式容器:</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%AE%B9%E5%99%A8%E7%9A%84%E7%AB%AF%E5%8F%A3%E6%98%A0%E5%B0%84"><span class="toc-number">3.</span> <span class="toc-text">设置容器的端口映射</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Docker%E9%95%9C%E5%83%8F%E5%92%8C%E4%BB%93%E5%BA%93"><span class="toc-number">4.</span> <span class="toc-text">Docker镜像和仓库</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%97%E5%87%BA%E9%95%9C%E5%83%8F"><span class="toc-number">4.1.</span> <span class="toc-text">列出镜像</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E9%95%9C%E5%83%8F"><span class="toc-number">4.2.</span> <span class="toc-text">删除镜像</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%8E%B7%E5%8F%96%E5%92%8C%E6%8E%A8%E9%80%81%E9%95%9C%E5%83%8F"><span class="toc-number">5.</span> <span class="toc-text">获取和推送镜像</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E9%95%9C%E5%83%8F"><span class="toc-number">5.1.</span> <span class="toc-text">查找镜像:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8B%89%E5%8F%96%E9%95%9C%E5%83%8F"><span class="toc-number">5.2.</span> <span class="toc-text">拉取镜像:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8E%A8%E9%80%81%E9%95%9C%E5%83%8F"><span class="toc-number">5.3.</span> <span class="toc-text">推送镜像:</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F"><span class="toc-number">6.</span> <span class="toc-text">构建镜像</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8commit%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F"><span class="toc-number">6.1.</span> <span class="toc-text">使用commit构建镜像:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8Dockerfile%E5%AE%9A%E4%B9%89%E5%AE%B9%E5%99%A8"><span class="toc-number">6.2.</span> <span class="toc-text">使用Dockerfile定义容器:</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFDockerfile%E6%96%87%E4%BB%B6%E5%91%A2-%E5%85%B6%E5%AE%9E%E5%B0%B1%E6%98%AF%E5%8C%85%E5%90%AB%E4%BA%86%E4%B8%80%E4%BA%9B%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E7%9A%84%E6%96%87%E6%9C%AC%E6%96%87%E4%BB%B6"><span class="toc-number">6.2.1.</span> <span class="toc-text">什么是Dockerfile文件呢?其实就是包含了一些执行命令的文本文件.</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Dockerfile%E7%9A%84%E6%8C%87%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="toc-number">6.2.2.</span> <span class="toc-text">Dockerfile的指令格式</span></a></li></ol></li></ol></li></ol></nav></div></aside><main class="main" role="main"><div class="content"><article id="post-Docker/docker | 03入门构建镜像以及在单一容器运行" class="article article-type-post" itemscope itemtype="http://schema.org/BlogPosting"><div class="article-header"><h1 class="article-title" itemprop="name">Docker(三)构建镜像以及在单一容器运行</h1><div class="article-meta"><span class="article-date"><i class="icon icon-calendar-check"></i> <a href="/2019/07/04/Docker/docker%20%7C%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/" class="article-date"><time datetime="2019-07-04T07:00:35.680Z" itemprop="datePublished">2019-07-04</time> </a></span><span class="article-category"><i class="icon icon-folder"></i> <a class="article-category-link" href="/categories/DevOps/">DevOps</a> </span><span class="article-tag"><i class="icon icon-tags"></i> <a class="article-tag-link-link" href="/tags/Docker/" rel="tag">Docker</a> </span><span class="article-read hidden-xs"><i class="icon icon-eye-fill" aria-hidden="true"></i> <span id="busuanzi_container_page_pv"><span id="busuanzi_value_page_pv">0</span> </span></span><span class="post-comment"><i class="icon icon-comment"></i> <a href="/2019/07/04/Docker/docker%20%7C%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/#comments" class="article-comment-link">评论</a></span> <span class="post-wordcount hidden-xs" itemprop="wordCount">字数统计: 3.1k(字)</span> <span class="post-readcount hidden-xs" itemprop="timeRequired">阅读时长: 12(分)</span></div></div><div class="article-entry marked-body" itemprop="articleBody"><h1 id="容器基本操作"><a href="#容器基本操作" class="headerlink" title="容器基本操作"></a>容器基本操作</h1><h2 id="启动容器："><a href="#启动容器：" class="headerlink" title="启动容器："></a>启动容器：</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run IMAGE [COMMAND] [ARGS...]</span><br></pre></td></tr></table></figure><p>run 命令解释：</p><ul><li>1.命令会检测当前要运行的镜像在本地存不存在,若不存在他会自动 pull 下来再运行</li><li>2.运行后会启动一个容器, 并且开启一个文件系统, 你可以直接在容器内创建文件夹. 运行一个指定的程序, 当程序退出后, 容器也就退出了</li><li>3.运行时的容器无法删除, 只能停止后删除, 或者加上 -f 参数强制删除</li></ul><p>示例: docker run centos echo ‘hello docker’</p><h2 id="启动守护式容器"><a href="#启动守护式容器" class="headerlink" title="启动守护式容器:"></a>启动守护式容器:</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -i -t IMAGE /bin/bash</span><br></pre></td></tr></table></figure><pre><code>-i --interactive=true|false 默认是false:允许你对容器内的标准输入 (STDIN) 进行交互  
+-t --tty=true|false 默认是false:在新容器内指定一个伪终端或终端  
+示例: docker run -i -t centos /bin/bash  
+使用exit退出守护式容器.
+</code></pre><h2 id="查看容器"><a href="#查看容器" class="headerlink" title="查看容器:"></a>查看容器:</h2><pre><code>docker ps [-a] [-l]
+    -a:表示列举所有的容器
+    -l :表示列举最近创建的容器.    
+默认情况容器在运行之后就停止了,ps只是显示正在运行的容器.
+</code></pre><p><img src="https://raw.githubusercontent.com/vincentxin-scott/img/master/picgo/20190704222607.png"></p><h2 id="查看容器详细信息"><a href="#查看容器详细信息" class="headerlink" title="查看容器详细信息:"></a>查看容器详细信息:</h2><pre><code>docker inspect [容器名字|容器唯一标识]
+要查看容器详细信息,需要输入很长串的字母.
+docker允许用户自定义容器的名字:
+    docker run --name=自定义名 -i -t IMAGE /bin/bash
+</code></pre><h2 id="重新启动停止的容器"><a href="#重新启动停止的容器" class="headerlink" title="重新启动停止的容器:"></a>重新启动停止的容器:</h2><pre><code>docker start [-i] 容器名
+</code></pre><h2 id="删除停止的容器"><a href="#删除停止的容器" class="headerlink" title="删除停止的容器:"></a>删除停止的容器:</h2><pre><code>docker rm 容器名    
+只能删除停止的容器,但是不能删除正在运行中的容器.
+</code></pre><h1 id="守护式容器"><a href="#守护式容器" class="headerlink" title="守护式容器"></a>守护式容器</h1><h2 id="以守护形式运行容器"><a href="#以守护形式运行容器" class="headerlink" title="以守护形式运行容器:"></a>以守护形式运行容器:</h2><pre><code>启动容器:docker run -i -t IMAGE /bin/bash
+退出但不关闭容器:Ctrl+P Ctrl+Q
+</code></pre><h2 id="附加到运行中的容器"><a href="#附加到运行中的容器" class="headerlink" title="附加到运行中的容器:"></a>附加到运行中的容器:</h2><pre><code>docker attach 容器名
+</code></pre><h2 id="启动守护式容器-1"><a href="#启动守护式容器-1" class="headerlink" title="启动守护式容器:"></a>启动守护式容器:</h2><pre><code>docker run -d 镜像名 [COMMAND] [ARG...]
+示例:docker run --name dc1 -d centos /bin/sh -c &quot;while true; do echo helloworld;sleep 1;done&quot;
+</code></pre><h2 id="查看容器日志"><a href="#查看容器日志" class="headerlink" title="查看容器日志:"></a>查看容器日志:</h2><pre><code>docker logs [-f] [-t] [--tail] 容器名
+    -f --follow=true|false 默认为false 一致跟踪日志的变化,并返回结果
+    -t --timestamps=true|false 默认为false 在返回的结果上加上时间戳
+    --tail = “all” 返回后几行的日志数据.
+</code></pre><h2 id="查看容器内进程"><a href="#查看容器内进程" class="headerlink" title="查看容器内进程:"></a>查看容器内进程:</h2><pre><code>docker top 容器名
+</code></pre><h2 id="在运行中的容器内启动新进程"><a href="#在运行中的容器内启动新进程" class="headerlink" title="在运行中的容器内启动新进程:"></a>在运行中的容器内启动新进程:</h2><pre><code>docker exec [-d] [-i] [-t] 容器名 [COMMAND] [ARG...]
+示例:docker exec -i -t dc1 /bin/bash
+</code></pre><h2 id="停止守护式容器"><a href="#停止守护式容器" class="headerlink" title="停止守护式容器:"></a>停止守护式容器:</h2><pre><code>docker stop 容器名 :发送一个信号给容器,等待容器的关闭.
+docker kill 容器名 :直接停止容器.
+</code></pre><h1 id="设置容器的端口映射"><a href="#设置容器的端口映射" class="headerlink" title="设置容器的端口映射"></a>设置容器的端口映射</h1><pre><code>run [-P] [-p]
+    -P , --publish-all=true|false 默认为false :将为容器所有暴露的端口进行映射.
+        示例:docker run -P -i -t centos /bin/bash
+    -p, --publish=[] :给指定的端口进行映射.
+        方式一:containerPort
+            示例:docker run -p 80 -i -t centos /bin/bash
+        方式二:hostPort:containerPort
+            示例:docker run -p 8080:80 -i -t centos /bin/bash
+        方式三:ip::containerPort
+            示例:docker run -p 0.0.0.0:80 -i -t centos /bin/bash
+        方式四:ip:hostPort:containerPort
+            示例:docker run -p 0.0.0.0:8080:80 -i -t centos /bin/bash
+</code></pre><h1 id="Docker镜像和仓库"><a href="#Docker镜像和仓库" class="headerlink" title="Docker镜像和仓库"></a>Docker镜像和仓库</h1><h2 id="列出镜像"><a href="#列出镜像" class="headerlink" title="列出镜像"></a>列出镜像</h2><pre><code>docker images [OPTIONS] [REPOSITORY]
+    -a, --all=false :表示列举出所有的镜像.默认并不显示中间层的镜像.
+    -f, --filter=[] :表示添加过滤条件.
+    --no-trunc=false:表示对信息进行截断.默认情况是会截断镜像的唯一id的.
+    -q, --quiet=false:表示值显示镜像的唯一id
+</code></pre><p><img src="https://raw.githubusercontent.com/vincentxin-scott/img/master/picgo/20190704230914.png"></p><pre><code>REPOSITORY 仓库: 是一切镜像的集合.
+REGISTRY 注册仓库:包含REPOSITORY 的仓库.
+TAG 标签:我们之前运行的centos默认使用的是lastest的标签.仓库名+镜像名就能唯一确定一个镜像.
+如果使用docker images -a 看到没有仓库名和标签名的其实是中间层镜像.
+</code></pre><h2 id="删除镜像"><a href="#删除镜像" class="headerlink" title="删除镜像"></a>删除镜像</h2><pre><code>docker rmi [OPTIONS] IMAGE [IMAGE...]
+-f, --force=false :表示强制删除镜像.
+--no-proune=false :会保留未被打标签的父镜像.
+删除对应仓库所有的镜像:docker rmi  $(docker images -q centos)
+</code></pre><h1 id="获取和推送镜像"><a href="#获取和推送镜像" class="headerlink" title="获取和推送镜像"></a>获取和推送镜像</h1><p>Docker中REGISTER仓库有些类似Maven的中央仓库.我们通过类似Git中的pull和push命令从REGISTER仓库中拉取镜像和推送镜像.</p><h2 id="查找镜像"><a href="#查找镜像" class="headerlink" title="查找镜像:"></a>查找镜像:</h2><pre><code>方式一:
+        Docker Hub    https://hub.docker.com/
+方式二:
+        docker search [OPTIONS] TERM
+            --no-trunc=false : 截断操作
+            -s,--starts=0 : 每个镜像都会有star,我们可以通过-s操作来限定star数.
+             一次最多返回25条记录.
+</code></pre><h2 id="拉取镜像"><a href="#拉取镜像" class="headerlink" title="拉取镜像:"></a>拉取镜像:</h2><pre><code>docker pull [OPTIONS] NAME [:TAG]
+-a, --all-tags=false :会把所有仓库中标记的镜像下载到本地中
+示例:docker pull ubuntu:14.04
+我们会发现我们拉取镜像的速度非常慢.我们可以修改REGISTER仓库的地址来加快下载的速度.    
+https://www.daocloud.io/mirror#accelerator-doc
+curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://a7775d97.m.daocloud.io
+sudo systemctl restart docker
+docker pull ubuntu:12.10
+我们会发现明显速度已经提升很多了.
+</code></pre><h2 id="推送镜像"><a href="#推送镜像" class="headerlink" title="推送镜像:"></a>推送镜像:</h2><pre><code>docker push 镜像名.
+步骤:
+    1.注册hub的账号.
+    2.登陆hub的账号.docker login
+    3.使用push命令推送到hub中
+        docker push username/repo name/tag
+</code></pre><h1 id="构建镜像"><a href="#构建镜像" class="headerlink" title="构建镜像"></a>构建镜像</h1><p>构建镜像可以让我们保存对容器的修改,并再次使用.提供了自定义镜像的能力,以软件的形式打包并方法服务及其运行环境.<br>docker里面提供了两种方式来构建镜像:</p><pre><code>        方式一:docker commit 通过容器构建
+        方式二:docker build 通过Dockerfile文件构建.
+</code></pre><h2 id="使用commit构建镜像"><a href="#使用commit构建镜像" class="headerlink" title="使用commit构建镜像:"></a>使用commit构建镜像:</h2><pre><code>docker commit [OPTIONS] CONTAINER(容器名称) [REPOSITORY[:TAG]]
+    -a, --author=”” 指定镜像的作者.
+    -m, --message=”” 提交信息,构建信息
+    -p, --pause=true 默认情况在commit的时候会暂停容器,使用这个参数可以在构建的时候不暂停容器.
+    步骤:
+        1.创建一个容器并安装nginx服务
+        docker run -it --name commit_test -p 80 centos /bin/bash
+        2.在容器内部安装nginx,和之前步骤一样
+        3.提交镜像.
+        docker commit -a &#39;作者信息&#39; -m &#39;备注&#39; commit_test（容器名称） username/repo:tag
+        4.通过docker images命令可以看到我们刚构建的镜像.
+        5.推送到远程仓库 docker push username/repo:tag
+</code></pre><h2 id="使用Dockerfile定义容器"><a href="#使用Dockerfile定义容器" class="headerlink" title="使用Dockerfile定义容器:"></a>使用Dockerfile定义容器:</h2><p>Dockerfile定义容器内环境中发生的事情。对网络接口和磁盘驱动器等资源的访问在此环境中进行虚拟化，该环境与系统的其他部分隔离，因此您需要将端口映射到外部世界，并具体说明要“复制”到哪些文件。您可以预期在此Dockerfile中定义的应用程序的构建在其运行的任何位置都表现完全相同。</p><h3 id="什么是Dockerfile文件呢-其实就是包含了一些执行命令的文本文件"><a href="#什么是Dockerfile文件呢-其实就是包含了一些执行命令的文本文件" class="headerlink" title="什么是Dockerfile文件呢?其实就是包含了一些执行命令的文本文件."></a>什么是Dockerfile文件呢?其实就是包含了一些执行命令的文本文件.</h3><pre><code>docker build [OPTIONS] PATH|URL|-
+    --force-rm=false
+    --no-cache=false
+    --pull=false
+    -q, --quiet=false
+    -rm=true
+    -t, --tag=””
+
+步骤:
+    1.在宿主机中,我们创建存放Dockerfile文件的目录和Dockerfile文件.
+        mkdir -p dockerfile/df_test1
+        cd dockerfile/df_test1/
+        vi Dockerfile
+    2.编写Dockfile文件
+        # First docker file for test
+        FROM centos
+        MAINTAINER lanxw0720 &quot;lanxiongwei@wolfcode.cn&quot;
+        RUN yum install -y wget
+        RUN wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+        RUN yum install -y epel-release
+        RUN yum install -y nginx
+        EXPOSE 80
+    3.使用build命令构建镜像.
+        docker build -t=&#39;lanxw0720/df_test1&#39; .
+    4.通过我们构建好的镜像来创建容器.
+        docker run -d --name nginx_web3 -p 80 lanxw0720/df_test1 /usr/sbin/nginx -g &quot;daemon off;&quot;
+</code></pre><h3 id="Dockerfile的指令格式"><a href="#Dockerfile的指令格式" class="headerlink" title="Dockerfile的指令格式"></a>Dockerfile的指令格式</h3><pre><code>指令主要分为两种:
+    注释 : # Comment
+    指令 : INSTRUCTION argument
+FROM:
+    包含两种格式:
+    1. FROM  &lt;image&gt;
+    2. FROM  &lt;image&gt;:&lt;tag&gt;
+    image要求是已经存在的镜像,我们也称为基础镜像.必须是第一条非注释指令
+
+MAINTAINER:
+    指定镜像的作者信息,包含镜像的所有者和联系信息.
+RUN:
+    指定当前镜像中运行的命令
+    RUN  &lt;command&gt; (shell模式)
+            /bin/sh -c command
+            RUN echo hello
+
+    RUN [“executable”,”param1”,”param2”] (exec模式)
+    RUN [“/bin/bash”,”-c”,”echo hello”]
+    每个RUN命令都会在当前镜像的上层创建一个新的镜像来运行指令.
+    
+EXPOSE:
+    指定运行该镜像的容器使用的端口.
+    虽然我们在构建镜像的时候暴露了端口号,但是我们在运行容器的时候依然需要指定端口的映射.
+    我们使用EXPOSE只是告诉Docker运行该镜像的容器会使用80端口,出于安全的考虑,docker并不会打开该端口.
+    而是需要我们在使用该镜像运行容器的时候指定端口的映射.
+
+CMD:
+    CMD指令提供容器默认运行的命令,和之前讲的RUN指令类似.都是执行一个命令,但是RUN命令指定的命令是在镜像构建的过程运行的.
+    CMD的命令是在容器运行的时候运行的.如果我们在docker run命令中指定运行的命令的时候,CMD的指令会被覆盖,默认命令就不会执行.
+    CMD命令是指定容器启动的时候默认命令.
+    两种模式.
+    CMD [“executable”,”param1”,”param2”] (exec模式)
+    CMD command param1 param2 (shell 模式)
+    CMD [”param1”,”param2”] (作为ENTRYPOINT指令的默认参数.)
+
+    通过构建的镜像来创建容器
+    docker run -p 80 --name cmd_test1 -itd lanxw0720/df_test3
+    docker top cmd_test1
+    发现已经启动nginx了.
+    如果我们在启动的时候指定了参数,默认的CMD命令就会被覆盖了.
+    
+    
+ENTRYPOINT:
+    这个和我们刚刚讲的CMD指令非常相似,唯一的区别:不会给docker run的启动命令给覆盖.
+    如果需要覆盖ENTRYPOINT的指令,需要在docker run使用docker run --entrypoint覆盖.
+    ENTRYPOINT [“executable”,”param1”,”param2”] (exec模式)
+    ENTRYPOINT command param1 param2 (shell 模式)
+    示例:
+    docker build -t=&quot;lanxw0720/df_test4&quot; .
+    docker run -p 80 --name ep_test1 -d lanxw0720/df_test4 
+    docker ps -l
+    可以发现,启动的容器依然使用的ENTRYPOINT指定的命令执行.
+
+ADD:
+    将文件和目录复制到使用dockerfile构建的镜像中.
+    目标的来源可以本地的地址也可以是远程地址.
+    如果是本地地址,本地地址必须是构建目录中的相对地址
+    对于远程URL,docker并不推荐使用,更建议使用的是curl或者wget的命令来获取
+    目标路径需要指定镜像中的绝对路径
+    ADD &lt;src&gt;...&lt;dest&gt;
+    ADD [“&lt;src&gt;”...”&lt;dest&gt;”](适用于文件路径有空格的情况)
+
+COPY:    
+    同上.
+    COPY&lt;src&gt;...&lt;dest&gt;
+    COPY[“&lt;src&gt;”...”&lt;dest&gt;”](适用于文件路径有空格的情况)
+    示例:
+    在Dockerfile所在目录添加index.html文件
+    docker build -t=&quot;lanxw0720/df_test6&quot; .
+    docker run -p 80 --name add_test1 -d lanxw0720/df_test6
+    curl http://127.0.0.1:32775
+
+VOLUME:
+    用于基于镜像创建的容器添加卷,一个卷可以存在一个或者多个容器的特定目录.这个目录可以绕过联合文件系统.提供共享数据和持久化数据的功能.(后面单独讲)
+WORKDIR:
+    WORKDIR /path/to/workdir
+    这个指令从指令创建一个容器是,在容器内部设置工作目录.ENTRYPOINT和CMD的命令都会在这个目录下执行.
+    我们也可以使用这个命令给后续的构建中指定工作目录.
+    通常会使用绝对路径,如果使用了相对路径,那这个路径会一致传递下去.如下所示:
+    WORKDIR /a
+    WORKDIR b
+    WORKDIR c
+    RUN pwd
+    结果====&gt;/a/b/c
+
+ENV:
+    ENV &lt;key&gt;&lt;value&gt;
+    ENV &lt;key&gt;&lt;value&gt;...
+    这个指令主要是来设置环境变量,这个环境变量在构建过程中和运行过程中都有效.
+
+USER:
+    USER daemon
+    指定镜像会以什么样的用户去运行.
+    比如:USER nginx
+    基于该镜像启动的容器就会以nginx的用户来运行.
+    如果没有指定USER,容器会使用root用户来运行.
+    
+ONBUILD:
+    ONBUILD [INSTRUCTION]
+    镜像触发器.
+    当一个镜像被其他镜像作为基础镜像时执行
+    会在构建过程中插入指令
+    
+    示例:
+    docker run -p 80 --name onbuild_test1 -d lanxw0720/df_test7
+    curl http://127.0.0.1:32776
+    发现在构建这个镜像的时候并没有执行COPY命令.
+    接下来我们基于这个镜像来构建新的镜像.
+    
+    docker build -t=&quot;lanxw0720/df_test8&quot; .
+    docker run -p 80 --name onbuild_test2 -d lanxw0720/df_test8
+    curl http://127.0.0.1:32777
+    此时发现已经执行COPY命令了.
+</code></pre></div><div class="article-footer"><blockquote class="mt-2x"><ul class="post-copyright list-unstyled"><li class="post-copyright-link hidden-xs"><strong>本文链接：</strong> <a href="https://vincentxin-scott.github.io/2019/07/04/Docker/docker%20|%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/" title="Docker(三)构建镜像以及在单一容器运行" target="_blank" rel="external">https://vincentxin-scott.github.io/2019/07/04/Docker/docker%20|%2003%E5%85%A5%E9%97%A8%E6%9E%84%E5%BB%BA%E9%95%9C%E5%83%8F%E4%BB%A5%E5%8F%8A%E5%9C%A8%E5%8D%95%E4%B8%80%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C/</a></li><li class="post-copyright-license"><strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="http://creativecommons.org/licenses/by/4.0/deed.zh" target="_blank" rel="external">CC BY 4.0 CN协议</a> 许可协议。转载请注明出处！</li></ul></blockquote><div class="panel panel-default panel-badger"><div class="panel-body"><figure class="media"><div class="media-left"><a href="https://github.com/vincentxin-scott" target="_blank" class="img-burn thumb-sm visible-lg"><img src="/images/avatar.jpg" class="img-rounded w-full" alt=""></a></div><div class="media-body"><h3 class="media-heading"><a href="https://github.com/vincentxin-scott" target="_blank"><span class="text-dark">Vincent Xin</span><small class="ml-1x">从零开始的程序猿之路</small></a></h3><div>努力变瘦的胖子。</div></div></figure></div></div></div></article><section id="comments"></section></div><nav class="bar bar-footer clearfix" data-stick-bottom><div class="bar-inner"><ul class="pager pull-left"><li class="prev"><a href="/2019/07/04/Docker/docker%20%7C%2004%E5%85%A5%E9%97%A8%E5%A4%9A%E5%AE%B9%E5%99%A8%E8%BF%90%E8%A1%8C%E5%BA%94%E7%94%A8/" title="Docker(四)多容器运行应用"><i class="icon icon-angle-left" aria-hidden="true"></i><span>&nbsp;&nbsp;上一篇</span></a></li><li class="next"><a href="/2019/07/02/%E6%9D%82%E8%AE%B0%E9%9A%8F%E7%AC%94/Markdown%E4%BB%A3%E7%A0%81%E9%AB%98%E4%BA%AE%E6%94%AF%E6%8C%81%E8%AF%AD%E8%A8%80/" title="Markdown代码高亮支持语言"><span>下一篇&nbsp;&nbsp;</span><i class="icon icon-angle-right" aria-hidden="true"></i></a></li><li class="toggle-toc"><a class="toggle-btn collapsed" data-toggle="collapse" href="#collapseToc" aria-expanded="false" title="文章目录" role="button"><span>[&nbsp;</span><span>文章目录</span> <i class="text-collapsed icon icon-anchor"></i> <i class="text-in icon icon-close"></i> <span>]</span></a></li></ul><button type="button" class="btn btn-fancy btn-donate pop-onhover bg-gradient-warning" data-toggle="modal" data-target="#donateModal"><span>赏</span></button><div class="bar-right"><div class="share-component" data-sites="weibo,wechat" data-mobile-sites="weibo,qq,qzone"></div></div></div></nav><div class="modal modal-center modal-small modal-xs-full fade" id="donateModal" tabindex="-1" role="dialog"><div class="modal-dialog" role="document"><div class="modal-content donate"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><div class="modal-body"><div class="donate-box"><div class="donate-head"><p>感谢您的支持，我会继续努力的!</p></div><div class="tab-content"><div role="tabpanel" class="tab-pane fade active in" id="alipay"><div class="donate-payimg"><img src="/images/donate/alipayimg.png" alt="扫码支持" title="扫一扫"></div><p class="text-muted mv">扫码打赏，你说多少就多少</p><p class="text-grey">打开支付宝扫一扫，即可进行扫码打赏哦</p></div><div role="tabpanel" class="tab-pane fade" id="wechatpay"><div class="donate-payimg"><img src="/images/donate/wechatpayimg.png" alt="扫码支持" title="扫一扫"></div><p class="text-muted mv">扫码打赏，你说多少就多少</p><p class="text-grey">打开微信扫一扫，即可进行扫码打赏哦</p></div></div><div class="donate-footer"><ul class="nav nav-tabs nav-justified" role="tablist"><li role="presentation" class="active"><a href="#alipay" id="alipay-tab" role="tab" data-toggle="tab" aria-controls="alipay" aria-expanded="true"><i class="icon icon-alipay"></i> 支付宝</a></li><li role="presentation"><a href="#wechatpay" role="tab" id="wechatpay-tab" data-toggle="tab" aria-controls="wechatpay" aria-expanded="false"><i class="icon icon-wepay"></i> 微信支付</a></li></ul></div></div></div></div></div></div></main><footer class="footer" itemscope itemtype="http://schema.org/WPFooter"><ul class="social-links"><li><a href="https://github.com/vincentxin-scott" target="_blank" title="Github" data-toggle="tooltip" data-placement="top"><i class="icon icon-github"></i></a></li><li><a href="/atom.xml" target="_blank" title="Rss" data-toggle="tooltip" data-placement="top"><i class="icon icon-rss"></i></a></li></ul><div class="copyright"><div class="publishby">Theme by <a href="https://github.com/cofess" target="_blank">cofess </a>base on <a href="https://github.com/cofess/hexo-theme-pure" target="_blank">pure</a>.</div></div></footer><script src="//cdn.jsdelivr.net/npm/jquery@1.12.4/dist/jquery.min.js"></script><script>window.jQuery||document.write('<script src="js/jquery.min.js"><\/script>')</script><script src="/js/plugin.min.js"></script><script src="/js/application.js"></script><script>window.INSIGHT_CONFIG={TRANSLATION:{POSTS:"文章",PAGES:"页面",CATEGORIES:"分类",TAGS:"标签",UNTITLED:"(未命名)"},ROOT_URL:"/",CONTENT_URL:"/content.json"}</script><script src="/js/insight.js"></script><script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><link rel="stylesheet" href="https://jjeejj.github.io/css/gitment.css"><script src="https://jjeejj.github.io/js/gitment.js"></script><script>var gitment=new Gitment({id:"Thu Jul 04 2019 15:00:35 GMT+0800",owner:"vincentxin-scott",repo:"vincentxin-scott.github.io",oauth:{client_id:"bdbd787b33e959dde648",client_secret:"e7d3f2e10d7a8d4e384c2a9765a5180ed4a92ad0"}});gitment.render("comments")</script></body></html>

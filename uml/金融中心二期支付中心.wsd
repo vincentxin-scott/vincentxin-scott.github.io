@@ -1,0 +1,27 @@
+@startuml
+class 接入应用配置{
+    id:接入支付应用ID
+    name:应用名称不可重复
+    describe: 应用描述
+    mark:标识
+    payChannle:应用开通支付渠道以及类型
+    isDel:是否删除
+    createTime:创建时间
+    modifyTime:修改时间
+    isActiave:是否激活使用
+}
+
+Class 应用支付参数配置{
+    id:接入支付应用ID
+    appName:应用名称
+    
+
+
+
+    isDel:是否删除
+    createTime:创建时间
+    modifyTime:修改时间
+    isActiave:是否激活使用
+}
+
+@enduml

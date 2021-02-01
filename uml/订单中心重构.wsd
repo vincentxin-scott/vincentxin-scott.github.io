@@ -1,0 +1,15 @@
+@startuml
+class  BaseOrder{
+    订单ID: id,
+    用户ID: customer_id,
+    删除标记: is_delete 默认是1未删除，0代表已删除
+    订单类型: order_type，优店订单，优惠买单订单，积分换购订单，供热订单，优选订单。。。。。
+    订单渠道: order_channle，支付宝小程序，微信小程序
+    收银台ID/商户ID: counter_id,
+    创建时间: gmt_create 
+    ' 修改时间: gmt_modify
+    ' 订单状态: order_state
+    ' 交易状态: deal_state
+    
+}
+@enduml

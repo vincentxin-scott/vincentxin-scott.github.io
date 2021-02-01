@@ -1,0 +1,29 @@
+@startuml 类图实例
+Class RegisterForm{
+    - user:UserDTO
+    - userDao:IUserDAO
+}
+
+
+interface IUserDAO{
+    + addUser(UserDTO usder):boolean
+}
+
+Class OracleUserDAO{
+    + addUser(UserDTO usder):boolean
+}
+Class UserDTO{
+    - userAccount:String
+    - userPassword:String
+    + getUserAccount():String
+    + setUserAccount():void
+    + getUserPassword():String
+    + setUserPassword():void
+}
+RegisterForm *-->  UserDTO :组合关系
+RegisterForm o..> IUserDAO :聚合关系
+IUserDAO ..> UserDTO : 依赖关系
+IUserDAO <|.. OracleUserDAO : 实现关系
+
+' note on 组合关系 “111”
+@enduml

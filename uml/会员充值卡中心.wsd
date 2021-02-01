@@ -1,0 +1,73 @@
+@startuml 会员充值卡中心
+
+class PrePayCardMainInfo{
+        id:
+        name:充值卡名称
+        card_batch:制卡批次
+        total_money:总金额
+        encryption_type:加密方式
+        per_money:单张卡金额
+        card_count:制卡数量
+        card_type:卡片类型实体卡，虚拟卡
+        create_type:创建方式 手动创建 自动创建
+        producer_id:制作人id
+        producer_name:制作人姓名
+
+        create_time:制卡时间
+        activate_time:激活时间
+        continuous:持续时间（这个要不要待定）
+        modify_time:修改时间
+        expiration_time:过期时间
+        card_state:卡片状态 未激活-已激活-已冻结-已过期
+        del_flag : 删除标记
+        create_company:制卡公司
+
+    }
+    class CustomerPrePayCard{
+        id:卡号编码
+        card_batch:制卡批次
+        card_no:预付卡卡号
+        pre_money:充值金额
+        encryption_type:加密方式
+        password:制卡密码
+        card_type:卡片类型实体卡，虚拟卡
+        create_type:创建方式 手动创建 自动创建
+
+        create_time:制卡时间
+        activate_time:激活时间
+        freeze_time:冻结时间
+        recharge_time:用户充值时间
+        expiration_time:过期时间
+        modify_time:修改时间
+        card_state:卡片状态 未激活-已激活-已冻结-已使用-已过期
+        
+        del_flag : 删除标记
+
+    }
+
+class PrePayCarRechargeLog{
+        id:预付卡卡号
+        pre_money:充值金额
+        recharge_customer_id:充值用户Id
+        recharge_customer_phone:充值用户电话
+        recharge_time:用户充值时间
+        del_flag : 删除标记
+
+    }
+
+
+
+class CustomerPrePayCarBuyInfo{
+        id:预付卡卡号
+        pre_money:充值金额
+        buy_customer_id: 购买用户id——在线支付购买用户记录
+        buy_customer_phone: 购买用户电话-在线支付购买用户记录
+        salesman_id: 销售人员id
+        salesman_name: 销售人员姓名
+        expiration_time:过期时间
+        del_flag : 删除标记
+
+    }
+
+
+@enduml

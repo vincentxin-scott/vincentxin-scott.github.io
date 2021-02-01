@@ -1,0 +1,246 @@
+@startuml
+    ' class base{
+    '     删除记录：is_delete
+    '     创建时间：gmt_creat
+    '     更新时间：gmt_modified
+    '     主键：各个表独立命名
+    ' }
+    
+    class order{
+
+        订单号：
+        用户号：
+        收银台号：
+        交易状态：未关闭 交易关闭，冻结交易
+        订单状态：未支付，已支付，退款中，退款失败，已退款
+        订单金额：
+        ' 优惠金额：
+        优惠规则：opx_rule_id
+        ' 应付金额：
+        ' 实付金额：
+        关闭时间：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+
+
+
+    class order_pay_rel{
+        订单号：
+        支付单号：
+        ' 商户号：
+        ' 商户名：
+    }
+   
+    class pay{
+        支付单号：
+        支付状态：未支付，已支付，支付失败 
+        支付类型：积分支付，支付宝，微信
+        支付渠道：pay_channle 原生 银盛，平台
+        支付金额：
+        支付积分：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+        
+    }
+
+    class payment_result{
+        支付单号：out_trade_no
+        通知时间：notify_time
+        支付金额：total_amount
+        银盛内部单号：trade_no
+        支付状态：trade_status
+        入账时间：account_date
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+    class pay_curpay_result{
+        支付单号：
+        支付积分：pay_cur
+        积分中心id：
+        支付状态：
+        入账时间：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+    '  class pay_settle_rel{
+        ' 支付单号
+        ' 结算单号：
+    ' }
+    ' class settle(结算){
+    '     结算单号：
+    '     结算金额：
+    '     结算时间：
+    '     结算类型：商户 平台 通道费 虚拟账户 
+    '     对应平台结算金额：
+    '     结算状态：分账成功，分账失败
+    '     对账状态：未对账，已对账
+    ' }
+    '  class settle{
+    '     ' 结算单号：
+    '     订单号：
+    '     支付单号：
+    '     结算总金额：
+    '     ' 分账模式：比例，金额
+    '     ' 结算商户编号： 
+    '     ' 商户结算金额：
+    '     ' 平台分成金额：
+    '     ' 平台分成费率：
+    '     手续费：
+    '     ' 积分反现金额：
+    '     ' 积分返现费率：
+    '     分账规则：
+    '     结算状态：分账成功，分账失败
+    ' }
+    class settle_split_second_clear{
+        分账单号：
+        订单号：
+        支付单号：
+        分账总金额：
+        分账规则：
+        分账类型：支付分账，对冲分账
+        支付渠道：原生，银盛，平台
+        分账状态：分账成功，分账失败
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+    class split_rules{
+        分账规则ID:
+        商户标识ID：
+        商户分账比例：
+        平台抽成比例：
+        积分比例：
+        通道费比例：
+        补贴比例：（或者金额）
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+
+
+    }
+    class settle_split_merchants{
+        分账单号：
+        ' 结算金额：
+        分账商户编号： 
+        商户分账金额：
+        备注：
+    }
+    class settle_split_plantform{
+        分账单号：
+        ' 结算金额：
+        平台分账金额：
+        备注：
+    }
+    class settle_split_virtual{
+        分账单号：
+        积分分账金额：
+        备注：
+    }
+    class settle_split_channle{
+        分账单号：
+        通道费分账金额：
+        备注
+
+    }
+
+
+    class settle_withdrawal_main{
+        提现申请单号：
+        商户编号：
+        提现金额：
+        提现状态：待审核-0，提现完成-1，提现失败-2，提现异常-3
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+    class settle_ys_withdrawal_first_clear{
+        id:
+        提现申请单号：
+        商户编号：
+        提现金额：
+        提现状态：提现完成-1，提现失败-2
+        一清金额：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+ class settle_ys_withdrawal_second_clear{
+        id:
+        提现申请单号：
+        商户编号：
+        提现金额：
+        提现状态：提现完成-1，提现失败-2
+        二清金额：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+    class settle_withdrawal_native_clear{
+        id:
+        提现申请单号：
+        商户编号：
+        提现金额：
+        提现状态：提现完成-1，提现失败-2
+        原生金额：
+        删除记录：is_delete
+        创建时间：gmt_creat
+        更新时间：gmt_modified
+    }
+'  base <|-- order :继承
+' base <|-- pay :继承
+' base <|-- settle_split_second_clear:继承
+
+order o-* order_pay_rel
+order_pay_rel *-o  pay
+' pay o-* pay_settle_rel
+' pay_settle_rel *-o settle_split_second_clear
+
+pay --> payment_result:银盛支付回执
+pay --> pay_curpay_result :积分中心回执
+settle_split_second_clear --> settle_split_merchants:商户分账单关联
+settle_split_second_clear --> settle_split_plantform:平台分账单关联
+settle_split_second_clear --> settle_split_virtual:积分账户分账单关联
+settle_split_second_clear --> settle_split_channle:通道费分账单关联
+
+settle_withdrawal_main-->settle_withdrawal_native_clear
+settle_withdrawal_main-->settle_ys_withdrawal_first_clear
+settle_withdrawal_main-->settle_ys_withdrawal_second_clear
+
+
+
+
+
+
+    ' package 崔昌浩结算中心思路{
+    '     class settle_store(商户结算){
+    '         结算单号：
+    '         结算金额：
+    '         结算时间：
+    '         结算类型：退款 付款 
+    '         对应平台结算金额：
+
+    '     }
+    '     class settle_plant(佣金结算){
+    '         结算单号：
+    '         ' 结算金额：
+    '         结算时间：
+    '         对应平台结算金额：
+
+    '     }
+    '     class settle_center(中心结算){
+    '         结算单号：
+    '         ' 结算金额：
+    '         支付类型：积分支付，现金支付，退款
+    '         虚拟账户结算金额（积分）：
+    '         通道费:
+    '         结算时间：
+
+    '     }
+    ' }
+    
+@enduml
